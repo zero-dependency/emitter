@@ -1,5 +1,5 @@
 {
-  "name": "@zero-dependency/tmp",
+  "name": "@zero-dependency/emitter",
   "version": "0.0.0",
   "type": "module",
   "types": "./dist/index.d.ts",
