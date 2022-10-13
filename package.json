@@ -14,6 +14,13 @@
   "files": [
     "dist"
   ],
+  "homepage": "https://github.com/zero-dependency",
+  "license": "MIT",
+  "author": {
+    "name": "Vitalij Ryndin",
+    "email": "sys@crashmax.ru",
+    "url": "https://crashmax.ru"
+  },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
