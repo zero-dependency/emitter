@@ -1,7 +1,8 @@
 # @zero-dependency/emitter
 
-[![](https://img.shields.io/npm/v/@zero-dependency/emitter)](https://npm.im/@zero-dependency/emitter)
-![](https://img.shields.io/npm/l/@zero-dependency/emitter)
+[![npm version](https://img.shields.io/npm/v/@zero-dependency/emitter)](https://npm.im/@zero-dependency/emitter)
+[![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@zero-dependency/emitter)](https://bundlephobia.com/package/@zero-dependency/emitter@latest)
+![npm license](https://img.shields.io/npm/l/@zero-dependency/emitter)
 
 ## Installation
 
