@@ -10,6 +10,7 @@ export default defineConfig({
     sourcemap: true,
     target: 'esnext',
     lib: {
+      formats: ['cjs', 'es', 'umd'],
       entry: resolve(__dirname, 'src/index.ts'),
       fileName: (format) => `index.${format}.js`,
       name
