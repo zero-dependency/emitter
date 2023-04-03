@@ -1,5 +1,5 @@
 import { describe, expect } from 'vitest'
-import { Emitter } from '../src/emitter.js'
+import { Emitter } from '../src/index.js'
 
 const once = Symbol('once')
 
@@ -13,6 +13,8 @@ type Events = {
 describe('Emitter', (test) => {
   const events = new Emitter<Events>()
 
+  function nopeMessage(): void {}
+
   function messageListener(msg: string): void {
     expect(msg).toBe('hello world')
   }
@@ -25,6 +27,7 @@ describe('Emitter', (test) => {
 
   test('addListener', () => {
     events
+      .on('message', nopeMessage)
       .addListener('message', messageListener)
       .addListener('error', errorListener)
       .once(once, onceListener)
@@ -39,14 +42,14 @@ describe('Emitter', (test) => {
   })
 
   test('listenerCount', () => {
-    expect(events.listenerCount('message')).toBe(1)
+    expect(events.listenerCount('message')).toBe(2)
     expect(events.listenerCount('error')).toBe(1)
     expect(events.listenerCount('empty')).toBe(0)
     expect(events.listenerCount(once)).toBe(1)
   })
 
   test('listeners', () => {
-    expect(events.listeners('message')).toEqual([messageListener])
+    expect(events.listeners('message')).toEqual([nopeMessage, messageListener])
     expect(events.listeners('error')).toEqual([errorListener])
     expect(events.listeners('empty')).toEqual([])
     expect(events.listeners(once)).not.toEqual([onceListener])

@@ -10,12 +10,9 @@ export class Emitter<T extends EventMap> implements TypedEventEmitter<T> {
    * @returns The emitter
    */
   on<E extends keyof T>(event: E, listener: T[E]): this {
-    const listeners = this.#events[event]
-    if (listeners) {
-      listeners.push(listener)
-    } else {
-      this.#events[event] = [listener]
-    }
+    const listeners = this.#events[event] ?? []
+    this.#events[event] = listeners
+    listeners.push(listener)
 
     return this
   }
@@ -52,7 +49,7 @@ export class Emitter<T extends EventMap> implements TypedEventEmitter<T> {
    * @returns `true` if the event had listeners, `false` otherwise
    */
   emit<E extends keyof T>(event: E, ...args: Parameters<T[E]>): boolean {
-    const listeners = this.#events[event] || []
+    const listeners = this.#events[event] ?? []
     for (let i = 0; i < listeners.length; i++) {
       listeners[i]!(...args)
     }
