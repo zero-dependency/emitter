@@ -1,21 +1,32 @@
 {
   "name": "@zero-dependency/emitter",
-  "version": "1.1.5",
+  "version": "1.1.6",
+  "description": "Emitter like Node.js EventEmitter",
   "type": "module",
   "types": "./dist/index.d.ts",
-  "main": "./dist/index.umd.js",
+  "main": "./dist/index.cjs.js",
+  "jsdelivr": "./dist/index.umd.js",
+  "unpkg": "./dist/index.umd.js",
   "module": "./dist/index.es.js",
   "exports": {
-    ".": {
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js"
-    }
+    "require": "./dist/index.cjs.js",
+    "import": "./dist/index.es.js"
   },
   "files": [
     "dist"
   ],
-  "homepage": "https://github.com/zero-dependency",
+  "keywords": [
+    "emitter",
+    "eventemitter",
+    "event",
+    "events",
+    "zero-dependency"
+  ],
   "license": "MIT",
+  "homepage": "https://github.com/zero-dependency/emitter",
+  "bugs": {
+    "url": "https://github.com/zero-dependency/emitter/issues"
+  },
   "author": {
     "name": "Vitalij Ryndin",
     "email": "sys@crashmax.ru",
@@ -30,15 +41,15 @@
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
-    "@crashmax/prettier-config": "^3.2.1",
-    "@crashmax/tsconfig": "^2.0.1",
-    "@types/node": "^18.15.11",
-    "@vitest/coverage-c8": "^0.30.0",
-    "@vitest/ui": "^0.30.0",
-    "jsdom": "^21.1.1",
-    "typescript": "^5.0.4",
-    "vite": "^4.2.1",
-    "vite-plugin-dts": "^2.2.0",
-    "vitest": "^0.30.0"
+    "@crashmax/prettier-config": "3.2.1",
+    "@crashmax/tsconfig": "2.0.1",
+    "@types/node": "18.15.11",
+    "@vitest/coverage-c8": "0.30.1",
+    "@vitest/ui": "0.30.1",
+    "jsdom": "21.1.1",
+    "typescript": "5.0.4",
+    "vite": "4.2.1",
+    "vite-plugin-dts": "2.2.0",
+    "vitest": "0.30.1"
   }
 }
