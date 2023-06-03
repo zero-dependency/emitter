@@ -37,5 +37,3 @@ export interface TypedEventEmitter<Events extends EventMap> {
   listeners<E extends keyof Events>(event: E): Events[E][]
   listenerCount<E extends keyof Events>(event: E): number
 }
-
-export default TypedEventEmitter
