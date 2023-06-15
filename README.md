@@ -34,9 +34,6 @@ function onMessage(msg: string): void {}
 // Adds the listener function for the event named message.
 events.on('message', onMessage)
 
-// Alias for `.on(event, listener)`.
-events.addListener('message', onMessage)
-
 // Adds a one-time listener function for the event named message.
 // The next time message is triggered, this listener is removed and then invoked.
 events.once('message', onMessage)
@@ -48,9 +45,6 @@ events.emit('message', 'hello world')
 
 // Removes the specified listener from the listener array for the event named message.
 events.off('message', onMessage)
-
-// Alias for `.off(event, listener)`.
-events.removeListener('message', onMessage)
 
 // Removes all listeners, or those of the specified message.
 events.removeAllListeners('message')

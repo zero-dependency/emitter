@@ -1,19 +1,20 @@
 import { describe, expect } from 'vitest'
 import { Emitter } from '../src/index.js'
 
-const once = Symbol('once')
+const onceSymbol = Symbol('once')
 
 type Events = {
   message: (msg: string) => void
   error: (msg: string) => void
   empty: () => void
-  [once]: () => void
+  spread: (...args: string[]) => void
+  [onceSymbol]: (key: string, value: number) => void
 }
 
 describe('Emitter', (test) => {
   const events = new Emitter<Events>()
 
-  function nopeMessage(): void {}
+  function nopeMessageListener(): void {}
 
   function messageListener(msg: string): void {
     expect(msg).toBe('hello world')
@@ -23,43 +24,63 @@ describe('Emitter', (test) => {
     expect(msg).toBe('some error')
   }
 
-  function onceListener(): void {}
+  function onceListener(key: string, value: number): void {
+    expect(key).toBe('hello')
+    expect(value).toBe(42)
+  }
+
+  function spreadListener(...args: string[]) {
+    expect(args.length).toBe(3)
+  }
 
   test('addListener', () => {
     events
-      .on('message', nopeMessage)
-      .addListener('message', messageListener)
-      .addListener('error', errorListener)
-      .once(once, onceListener)
+      .on('message', nopeMessageListener)
+      .on('message', messageListener)
+      .on('error', errorListener)
+      .on('spread', spreadListener)
+      .once(onceSymbol, onceListener)
   })
 
   test('eventNames', () => {
-    expect(events.eventNames()).toEqual([
+    expect(events.eventNames()).toStrictEqual([
       'message',
       'error',
-      once
+      'spread',
+      onceSymbol
     ])
   })
 
   test('listenerCount', () => {
     expect(events.listenerCount('message')).toBe(2)
     expect(events.listenerCount('error')).toBe(1)
+    expect(events.listenerCount('spread')).toBe(1)
     expect(events.listenerCount('empty')).toBe(0)
-    expect(events.listenerCount(once)).toBe(1)
+    expect(events.listenerCount(onceSymbol)).toBe(1)
   })
 
   test('listeners', () => {
-    expect(events.listeners('message')).toEqual([nopeMessage, messageListener])
-    expect(events.listeners('error')).toEqual([errorListener])
-    expect(events.listeners('empty')).toEqual([])
-    expect(events.listeners(once)).not.toEqual([onceListener])
+    expect(events.listeners('message')).toStrictEqual([
+      nopeMessageListener,
+      messageListener
+    ])
+    expect(events.listeners('error')).toStrictEqual([errorListener])
+    expect(events.listeners('empty')).toStrictEqual([])
+    expect(events.listeners('spread')).toStrictEqual([spreadListener])
+    expect(events.listeners(onceSymbol)).not.toStrictEqual([onceListener])
   })
 
   test('once', () => {
-    expect(events.eventNames()).toContainEqual(once)
-    expect(events.emit(once)).toBeTruthy()
-    expect(events.emit(once)).toBeFalsy()
-    expect(events.listenerCount(once)).toBe(0)
+    expect(events.eventNames()).toContainEqual(onceSymbol)
+    expect(events.emit(onceSymbol, 'hello', 42)).toBeTruthy()
+    expect(events.emit(onceSymbol, 'hello', 42)).toBeFalsy()
+    expect(events.listenerCount(onceSymbol)).toBe(0)
+
+    const proxyOnceListener = events.once(onceSymbol, onceListener)
+    expect(proxyOnceListener).toBeDefined()
+    expect(events.listenerCount(onceSymbol)).toBe(1)
+    events.off(onceSymbol, proxyOnceListener)
+    expect(events.listenerCount(onceSymbol)).toBe(0)
   })
 
   test('emit', () => {
@@ -70,9 +91,9 @@ describe('Emitter', (test) => {
 
   test('removeListener', () => {
     events
-      .addListener('error', messageListener)
-      .removeListener('error', errorListener)
-      .addListener('error', errorListener)
+      .on('error', messageListener)
+      .off('error', errorListener)
+      .on('error', errorListener)
 
     expect(events.listenerCount('error')).toBe(2)
   })
@@ -83,6 +104,6 @@ describe('Emitter', (test) => {
 
     events.removeAllListeners()
     expect(events.listenerCount('message')).toBe(0)
-    expect(events.listenerCount(once)).toBe(0)
+    expect(events.listenerCount(onceSymbol)).toBe(0)
   })
 })

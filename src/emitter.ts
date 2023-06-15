@@ -1,55 +1,90 @@
 import type { EventMap, TypedEventEmitter } from './types.js'
 
-export class Emitter<T extends EventMap> implements TypedEventEmitter<T> {
+/**
+ * Cross-platform, lightweight type-safe event emitter.
+ *
+ * @example
+ * type Events = {
+ *   error: (error: Error) => void
+ *   message: (from: string, content: string) => void
+ * }
+ *
+ * const emitter = new Emitter<Events>()
+ * emitter.emit('error', 'x')  // will catch this type error
+ */
+export class Emitter<Events extends EventMap>
+  implements TypedEventEmitter<Events>
+{
   #events: Record<string | number | symbol, Function[]> = {}
 
   /**
-   * Add an event listener
-   * @param event The event name
-   * @param listener The listener function
-   * @returns The emitter
+   * Adds a listener for the specified event.
+   *
+   * @param {Event} event
+   * The event name.
+   *
+   * @param {Events[Event]} listener
+   * The listener function.
+   *
+   * @return {this}
+   * Returns this instance for chaining.
    */
-  on<E extends keyof T>(event: E, listener: T[E]): this {
-    const listeners = this.#events[event] ?? []
-    this.#events[event] = listeners
+  on<Event extends keyof Events>(event: Event, listener: Events[Event]): this {
+    const listeners = this.listeners(event)
     listeners.push(listener)
+    this.#events[event] = listeners
 
     return this
   }
 
   /**
-   * Alias for `addListener`
+   * Returns a proxy function that when called, invokes the original listener function
+   * and removes the listener from the event emitter.
+   *
+   * @param {Event} event
+   * The event to listen to.
+   *
+   * @param {Events[Event]} listener
+   * The listener function to be called once.
+   *
+   * @return {Events[Event]}
+   * The original listener function.
    */
-  addListener<E extends keyof T>(event: E, listener: T[E]): this {
-    return this.on(event, listener)
+  once<Event extends keyof Events>(
+    event: Event,
+    listener: Events[Event]
+  ): Events[Event] {
+    const proxy = new Proxy(listener, {
+      apply: (target, _, args) => {
+        target(...args)
+        this.off(event, proxy)
+      }
+    })
+
+    this.on(event, proxy)
+
+    return proxy
   }
 
   /**
-   * Add an event listener that will be called only once
-   * @note The listener is wrapped in a wrapper function, so it cannot be equal to the original listener
-   * @param event The event name
-   * @param listener The listener function
-   * @returns The emitter
+   * Emits an event with a given name and passes any number of arguments to the
+   * listeners. Returns a boolean indicating whether the event had listeners
+   * attached.
+   *
+   * @param {Event} event
+   * The name of the event to be emitted.
+   *
+   * @param {...Parameters<Events[Event]>} args
+   * Any number of arguments to be passed to the listeners.
+   *
+   * @return {boolean}
+   * A boolean indicating whether the event had listeners attached.
    */
-  once<E extends keyof T>(event: E, listener: T[E]): this {
-    const onceListener = (...args: any[]) => {
-      this.off(event, onceListener as T[E])
-      listener(...args)
-    }
-
-    this.on(event, onceListener as T[E])
-
-    return this
-  }
-
-  /**
-   * Emit an event
-   * @param event The event name
-   * @param args The arguments to pass to the listeners
-   * @returns `true` if the event had listeners, `false` otherwise
-   */
-  emit<E extends keyof T>(event: E, ...args: Parameters<T[E]>): boolean {
-    const listeners = this.#events[event] ?? []
+  emit<Event extends keyof Events>(
+    event: Event,
+    ...args: Parameters<Events[Event]>
+  ): boolean {
+    const listeners = this.listeners(event)
     for (let i = 0; i < listeners.length; i++) {
       listeners[i]!(...args)
     }
@@ -58,12 +93,18 @@ export class Emitter<T extends EventMap> implements TypedEventEmitter<T> {
   }
 
   /**
-   * Remove an event listener
-   * @param event The event name
-   * @param listener The listener function
-   * @returns The emitter
+   * Removes a listener from the specified event.
+   *
+   * @param {Event} event
+   * the event to remove the listener from.
+   *
+   * @param {Events[Event]} listener
+   * the listener to remove from the event.
+   *
+   * @return {this}
+   * The class instance for chaining.
    */
-  off<E extends keyof T>(event: E, listener: T[E]): this {
+  off<Event extends keyof Events>(event: Event, listener: Events[Event]): this {
     if (this.#events[event]) {
       this.#events[event] = this.#events[event].filter((v) => v !== listener)
     }
@@ -72,18 +113,12 @@ export class Emitter<T extends EventMap> implements TypedEventEmitter<T> {
   }
 
   /**
-   * Alias for `off`
+   * Removes all listeners for the specified event or all events if none specified.
+   *
+   * @param {Event} [event] - The event to remove listeners for.
+   * @return {this} Returns the instance for chaining.
    */
-  removeListener<E extends keyof T>(event: E, listener: T[E]): this {
-    return this.off(event, listener)
-  }
-
-  /**
-   * Remove all event listeners
-   * @param event The event name
-   * @returns The emitter
-   */
-  removeAllListeners<E extends keyof T>(event?: E): this {
+  removeAllListeners<Event extends keyof Events>(event?: Event): this {
     if (event) {
       delete this.#events[event]
     } else {
@@ -94,28 +129,38 @@ export class Emitter<T extends EventMap> implements TypedEventEmitter<T> {
   }
 
   /**
-   * Get the list of event names
-   * @returns An array of event names
+   * Returns an array of all the event names that have listeners.
+   *
+   * @return {(keyof Events | string | symbol)[]}
+   * An array of event names.
    */
-  eventNames(): (string | symbol)[] {
+  eventNames(): (keyof Events | string | symbol)[] {
     return Reflect.ownKeys(this.#events)
   }
 
   /**
-   * Get the list of listeners for an event
-   * @param event The event name
-   * @returns An array of listeners
+   * Returns an array of listeners for the specified event.
+   *
+   * @param {Event} event
+   * The event name to retrieve listeners for.
+   *
+   * @return {Events[Event][]}
+   * An array of listeners for the specified event.
    */
-  listeners<E extends keyof T>(event: E): T[E][] {
-    return (this.#events[event] as T[E][]) ?? []
+  listeners<Event extends keyof Events>(event: Event): Events[Event][] {
+    return (this.#events[event] as Events[Event][]) ?? []
   }
 
   /**
-   * Get the number of listeners for an event
-   * @param event The event name
-   * @returns The number of listeners for the event
+   * Returns the number of listeners for the given event.
+   *
+   * @param {Event} event
+   * The event name.
+   *
+   * @return {number}
+   * The number of listeners for the given event.
    */
-  listenerCount<E extends keyof T>(event: E): number {
+  listenerCount<Event extends keyof Events>(event: Event): number {
     return this.#events[event]?.length ?? 0
   }
 }
