@@ -1,6 +1,6 @@
 {
   "name": "@zero-dependency/emitter",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Emitter like Node.js EventEmitter",
   "type": "module",
   "types": "./dist/index.d.ts",
