@@ -1,5 +1,11 @@
 # @zero-dependency/emitter
 
+## 1.2.5
+
+### Patch Changes
+
+- ci: set node 18
+
 ## 1.2.4
 
 ### Patch Changes
