@@ -1,4 +1,5 @@
 import { describe, expect } from 'vitest'
+
 import { Emitter } from '../src/index.js'
 
 const onceSymbol = Symbol('once')
